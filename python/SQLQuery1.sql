@@ -1101,15 +1101,15 @@ INSERT INTO [dbo].[Classrooms] VALUES (31,233,92.4955794644817);
 INSERT INTO [dbo].[Classrooms] VALUES (31,16,78.5079680932644);
 GO '2a'
 
-SELECT COUNT (DISTINCT  dbo.Classrooms.StudentId) AS Count_Stud ,dbo.Departments.DepartmentName
+SELECT COUNT (dbo.Classrooms.StudentId) ,dbo.Departments.DepartmentName
 FROM dbo.Courses 
 INNER JOIN dbo.Departments ON dbo.Courses.DepartmentId = dbo.Departments.DepartmentId 
 INNER JOIN dbo.Classrooms ON dbo.Classrooms.CourseId = dbo.Courses.CourseId 
-GROUP BY dbo.Departments.DepartmentName ;
+GROUP BY dbo.Departments.DepartmentName;
 
 GO '2b' 
 
-SELECT isnull(convert(VARCHAR,dbo.Courses.CourseName),'TOTAL') , COUNT ( DISTINCT dbo.Classrooms.StudentId ) AS Count_Stud
+SELECT isnull(convert(VARCHAR,dbo.Courses.CourseName),'TOTAL') , COUNT (dbo.Classrooms.StudentId ) AS Count_Stud
 FROM dbo.Courses 
 INNER JOIN dbo.Classrooms ON dbo.Classrooms.CourseId = dbo.Courses.CourseId 
 WHERE dbo.Courses.DepartmentId = 1
@@ -1129,7 +1129,7 @@ GROUP BY subq2.Class_type
 
 GO '2d'
 
-SELECT COUNT (  dbo.Students.Gender ) AS Count_gender , dbo.Students.Gender
+SELECT COUNT (dbo.Students.Gender ) AS Count_gender , dbo.Students.Gender
 FROM dbo.Students 
 GROUP BY dbo.Students.Gender 
 
@@ -1138,7 +1138,7 @@ GO '2e'
 SELECT  subq.Course_name     
 FROM
 (SELECT    dbo.Courses.CourseName AS Course_name , 
-           COUNT ( dbo.Classrooms.StudentId ) * 1.0 AS Count_Stud, 
+           COUNT (dbo.Classrooms.StudentId ) * 1.0 AS Count_Stud, 
            COUNT ( case when  dbo.Students.Gender = 'F' then 1 else null end  ) *1.0   AS Count_FStud ,
            COUNT ( case when  dbo.Students.Gender = 'M' then 1 else null end  ) *1.0   AS Count_MStud       
 FROM dbo.Courses 
@@ -1152,9 +1152,9 @@ group by subq.Course_name
 GO '2f'
 
 SELECT    dbo.Departments.DepartmentName AS Dep_name , 
-           COUNT (  dbo.Classrooms.StudentId ) * 1.0 AS Count_total_Stud, 
-           COUNT (case when   dbo.Classrooms.Degree > 80 then 1 else null end  ) *1.0   AS Count_Stud_over80 ,
-           COUNT ( case when dbo.Classrooms.Degree > 80 then 1 else null end  ) *1.0 / COUNT (  dbo.Classrooms.StudentId ) * 1.0    AS Precentege_over80               
+           COUNT (dbo.Classrooms.StudentId ) * 1.0 AS Count_total_Stud, 
+           COUNT ( case when  dbo.Classrooms.Degree > 80 then 1 else null end  ) *1.0   AS Count_Stud_over80 ,
+           COUNT ( case when  dbo.Classrooms.Degree > 80 then 1 else null end  ) *1.0 / COUNT (dbo.Classrooms.StudentId ) * 1.0    AS Precentege_over80               
 FROM dbo.Courses 
 INNER JOIN dbo.Classrooms ON dbo.Classrooms.CourseId = dbo.Courses.CourseId
 INNER JOIN dbo.Students ON dbo.Students.StudentId = dbo.Classrooms.StudentId 
