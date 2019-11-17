@@ -1178,7 +1178,7 @@ GO '2h'
 SELECT    dbo.Teachers.TeacherId AS Teacher_ID , 
           dbo.Teachers.FirstName AS Teacher_name ,
 		  dbo.Teachers.LastName AS Teacher_lname ,
-          SUM(dbo.Classrooms.Degree )/COUNT (dbo.Classrooms.StudentId ) * 1.0 AS Stud_averege       
+          SUM(dbo.Classrooms.Degree )/COUNT (DISTINCT dbo.Classrooms.StudentId ) * 1.0 AS Stud_averege       
 FROM dbo.Courses 
 INNER JOIN dbo.Classrooms ON dbo.Classrooms.CourseId = dbo.Courses.CourseId
 INNER JOIN dbo.Teachers ON dbo.Teachers.TeacherId = dbo.Courses.TeacherId 

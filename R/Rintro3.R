@@ -80,7 +80,8 @@ starwars$films
 mysw <- starwars %>%
   group_by(homeworld) %>% 
   mutate(male = ifelse(gender == "male",1,0),
-         female = ifelse(gender == "female", 1,0),
+         female = 
+           ifelse(gender == "female", 1,0),
          nogender = ifelse(is.na(gender)==T,1,0),
          attack_of_clones = ifelse("Attack of the Clones" %in% films,1,0)) %>%
   filter(attack_of_clones == 1) %>%
@@ -95,6 +96,7 @@ mysw <- starwars %>%
             nogender = sum(nogender, na.rm=TRUE),
             num_individuals=n()) %>%
   arrange(desc(num_individuals))
+mysw
 
 
 ##############################
