@@ -46,6 +46,8 @@ df1 <- iris2 %>%
          id = 1:nrow(iris2)) %>%
   select(id, Sepal.ratio, Petal.ratio)
 
+
+
 iris2 <- iris2 %>%
   mutate(id = 1:nrow(iris2))
 
