@@ -92,6 +92,17 @@ where job = 'Director'
 
 GO
 
+
+----- movie_actor_date_revenue as view 
+SELECT a.productor_id, a.movie_id, b.release_date, b.revenue
+INTO dbo.movie_producer_date_revenue
+FROM movie_productors a
+LEFT OUTER JOIN movies b
+ON a.movie_id = b.movie_id
+;
+
+GO
+
 /**************************/
 /**      FLAT FILE       **/
 /**************************/
@@ -322,4 +333,5 @@ SELECT a.movie_id
     ON a.movie_id = q.movie_id
 
 /***************************/
+
 
