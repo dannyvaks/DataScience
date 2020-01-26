@@ -125,7 +125,8 @@ SELECT a.movie_id
       , (CASE WHEN (poster_path <> '') THEN (1) ELSE (0) END) AS sw_has_poster
       , (CASE WHEN (tagline <> '') THEN (1) ELSE (0) END) AS sw_tagline
       , (SELECT COUNT(1) FROM movie_keywords WHERE movie_id= a.movie_id) AS keyword_cnt
-      , CASE WHEN (YEAR(a.release_date) > 2017) THEN (YEAR(a.release_date)-100) ELSE (YEAR(a.release_date)) END AS release_year
+      , CASE WHEN (YEAR(a.release_date) > high_release_month
+	  ) THEN (YEAR(a.release_date)-100) ELSE (YEAR(a.release_date)) END AS release_year
       , MONTH(a.release_date) AS release_month
       , CASE WHEN (MONTH(a.release_date) IN (8,9,10,12)) THEN (1) ELSE (0) END AS high_release_month
       , DAY(a.release_date) AS release_day
