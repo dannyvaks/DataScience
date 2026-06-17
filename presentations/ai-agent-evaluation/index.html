@@ -11,9 +11,12 @@
   Navigation: ← / → / Space / PgUp / PgDn, on-screen buttons, or '?' for help.
   ----------------------------------------------------------------------------
   Sources (research grounding):
-   - Air Canada chatbot ruling: CBC / BBC / case write-ups (Moffatt v. Air Canada, 2024)
-   - ChatGPT fake legal cases: NBC News (Mata v. Avianca, 2023)
-   - $1 Chevy Tahoe: Chevrolet of Watsonville chatbot, Dec 2023 (widely reported)
+   - Air Canada chatbot ruling: Moffatt v. Air Canada, 2024 BCCRT 149 (CanLII: https://canlii.ca/t/k2spq)
+     Damages CAD $650.88 + $36.14 interest + $125 fees. Reports: BBC, CBC, Ars Technica, Guardian.
+   - ChatGPT fake legal cases: Mata v. Avianca, SDNY 2023 (Schwartz & LoDuca, $5,000 sanction;
+     https://en.wikipedia.org/wiki/Mata_v._Avianca,_Inc.)
+   - $1 Chevy Tahoe: Chevrolet of Watsonville chatbot, Dec 2023, prompt-injection prank by Chris
+     Bakke; dealer did NOT honor it. (AI Incident DB #622: https://incidentdatabase.ai/cite/622/)
    - RAG metrics & LLM-as-judge: Ragas docs, Confident AI / DeepEval, Patronus, Deepchecks
    - Golden datasets / regression / trajectory eval: getmaxim.ai, Google ADK codelabs, Adaline
    - Non-determinism vs traditional testing: MLflow, SitePoint, n8n blog
@@ -188,8 +191,8 @@
         </div>
         <div class="card" data-r="4">
           <div class="big accent">$650</div>
-          <p style="margin:.4em 0 0">The tribunal <b>rejected</b> the "it's not us" defense and ordered Air Canada to pay.</p>
-          <p class="small" style="margin-top:12px">Moffatt v. Air Canada, BC Civil Resolution Tribunal, 2024.</p>
+          <p style="margin:.4em 0 0">The tribunal <b>rejected</b> the "it's not us" defense — Air Canada paid <b>CAD&nbsp;$650.88</b> in damages (≈$812 with interest&nbsp;&amp;&nbsp;fees).</p>
+          <p class="small" style="margin-top:12px"><a href="https://canlii.ca/t/k2spq" target="_blank" rel="noopener">Moffatt v. Air&nbsp;Canada, 2024 BCCRT&nbsp;149</a> · BC Civil Resolution Tribunal</p>
         </div>
       </div>
       <p class="lead center" data-r="5" style="margin-top:22px">The code worked perfectly. The <b class="accent">answer</b> was a lawsuit.</p>
@@ -215,8 +218,14 @@
           <p>Air Canada — same root cause: a confident model, an <b>unverified</b> answer, a real bill.</p>
         </div>
       </div>
-      <p class="quote center" data-r="6" style="margin:26px auto 0;max-width:880px">
+      <p class="quote center" data-r="6" style="margin:22px auto 0;max-width:880px">
         None of these had a <span class="tag-bad">bug</span>. They shipped without <span class="accent">evaluation</span>.
+      </p>
+      <p class="small center" data-r="6" style="margin-top:14px">
+        Sources:
+        <a href="https://incidentdatabase.ai/cite/622/" target="_blank" rel="noopener">$1 Tahoe (AI Incident DB #622)</a> ·
+        <a href="https://en.wikipedia.org/wiki/Mata_v._Avianca,_Inc." target="_blank" rel="noopener">Mata v. Avianca ($5,000 sanction)</a> ·
+        <a href="https://canlii.ca/t/k2spq" target="_blank" rel="noopener">Moffatt v. Air Canada, 2024 BCCRT 149</a>
       </p>
     </div>
   </section>
