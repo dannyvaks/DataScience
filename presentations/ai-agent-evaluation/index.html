@@ -149,6 +149,51 @@
   #help table{width:100%;border-collapse:collapse}
   #help td{padding:8px 6px;border-bottom:1px solid var(--line);font-size:15px}
 
+  /* ---------- "screenshot" mockups (HTML recreations, offline) ---------- */
+  .shot{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0c1325;box-shadow:0 16px 40px rgba(0,0,0,.45)}
+  .shot .bar{display:flex;align-items:center;gap:7px;padding:9px 12px;background:#0a0f1f;border-bottom:1px solid var(--line)}
+  .shot .bar i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .dot-r{background:#fb7185}.dot-y{background:#fbbf24}.dot-g{background:#34d399}
+  .shot .bar span{margin-left:8px;font-size:12px;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+  .shot .body{padding:14px}
+  /* chat */
+  .chat .msg{max-width:88%;padding:10px 13px;border-radius:14px;margin:9px 0;font-size:14.5px;line-height:1.4}
+  .chat .user{margin-left:auto;background:#1f4a6b;border-bottom-right-radius:4px;color:#eaf6ff}
+  .chat .bot{background:#1b2440;border:1px solid var(--line);border-bottom-left-radius:4px}
+  .chat .bot.bad{border-color:rgba(251,113,133,.5);background:#2a1622}
+  .chat .bot.good{border-color:rgba(52,211,153,.5);background:#0f2a22}
+  .chat .who{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .chat .src{display:block;margin-top:6px;font-size:12px;color:var(--accent)}
+  /* terminal / CI run */
+  .term{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;line-height:1.65;color:#cdd8f7}
+  .term .ok{color:var(--good)}.term .ko{color:var(--bad)}.term .dim{color:var(--muted)}.term .hl{color:var(--warn)}
+  /* eval report card */
+  .report .row{display:grid;grid-template-columns:150px 1fr 56px;gap:10px;align-items:center;margin:10px 0;font-size:14px}
+  .report .row .lbl{color:var(--ink)}
+  .report .row .track{height:9px;border-radius:999px;background:#0a0f1f;border:1px solid var(--line);overflow:hidden}
+  .report .row .track > b{display:block;height:100%;border-radius:999px}
+  .report .row .pct{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+
+  /* ---------- dynamic quiz ---------- */
+  #quiz .qcard{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:18px;padding:24px;max-width:840px;margin:0 auto}
+  #quiz .qnum{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+  #quiz .qtext{font-size:clamp(20px,2.6vw,28px);margin:6px 0 18px;line-height:1.25}
+  #quiz .opts{display:grid;gap:11px}
+  #quiz .opt{text-align:left;cursor:pointer;border:1px solid var(--line);background:#0e1730;color:var(--ink);border-radius:12px;padding:13px 16px;font-size:16px;transition:transform .12s,border-color .15s,background .15s}
+  #quiz .opt:hover:not(:disabled){transform:translateX(4px);border-color:var(--accent)}
+  #quiz .opt:disabled{cursor:default;opacity:.95}
+  #quiz .opt.correct{border-color:var(--good);background:#0f2a22}
+  #quiz .opt.wrong{border-color:var(--bad);background:#2a1622}
+  #quiz .opt .mk{float:right;font-weight:800}
+  #quiz .explain{margin-top:16px;font-size:15px;color:var(--muted);min-height:1.3em;border-left:3px solid var(--accent2);padding-left:14px;display:none}
+  #quiz .explain.show{display:block;animation:rise .4s ease both}
+  #quiz .qfoot{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
+  #quiz .scoretag{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+  #quiz .qnext{border:1px solid var(--accent);background:rgba(94,234,212,.12);color:var(--ink);border-radius:10px;padding:10px 18px;font-size:15px;cursor:pointer;visibility:hidden}
+  #quiz .qnext:hover{background:rgba(94,234,212,.22)}
+  #quiz .finalcard{text-align:center}
+  #quiz .finalcard .big{margin:10px 0}
+
   .footnote{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:12px;text-align:center;width:90%}
   @media (prefers-reduced-motion: reduce){
     *{animation:none !important;transition:none !important}
@@ -158,7 +203,7 @@
 <body>
 <div id="progress"></div>
 <div id="brand"><b>Module 2</b> · Evaluation</div>
-<div id="counter">1 / 18</div>
+<div id="counter">1 / 20</div>
 
 <div class="stage" id="stage">
 
@@ -299,8 +344,8 @@
           <p>The <b>journey</b>: did it pick the right tools, in the right order, with the right arguments? A correct answer reached by luck is a time bomb.</p>
         </div>
         <div class="card" data-r="5">
-          <h3>3 · Retrieval (RAG)</h3>
-          <p>Did it pull the <b>right facts</b> from your documents — or answer from imagination?</p>
+          <h3>3 · Retrieval <span style="font-weight:400;color:var(--muted);font-size:.8em">(RAG)</span></h3>
+          <p>Did it look up the <b>right facts</b> from your documents — or answer from imagination? <span class="small">(RAG = letting the AI "look things up" — full intro in a few slides.)</span></p>
         </div>
       </div>
       <p class="lead center" data-r="6" style="margin-top:20px">Air Canada nailed #1's grammar, skipped #3's facts. <b class="accent">All three matter.</b></p>
@@ -410,7 +455,34 @@ Proof of bereavement is required at the time of booking.</div>
     </div>
   </section>
 
-  <!-- 12 · RAG METRICS -->
+  <!-- 12 · WHAT IS RAG -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>New term · you'll see it everywhere</span>
+      <h2 data-r="2">Wait — what's <span class="accent">RAG</span>?</h2>
+      <div class="grid g2" style="align-items:center;gap:26px">
+        <div data-r="3">
+          <div class="def"><b>RAG = Retrieval-Augmented Generation.</b> Before answering, the agent <b>looks up</b> relevant text from <em>your</em> approved documents, then writes its answer using what it found.</div>
+          <ul class="clean">
+            <li><b>Closed-book exam</b> — answer from memory. Confident, and sometimes made-up. 😬</li>
+            <li><b>Open-book exam</b> — look it up first, then answer. That's RAG.</li>
+            <li>It's how a bot "knows" <em>your</em> refund policy, prices, or HR rules — facts it was never trained on.</li>
+          </ul>
+        </div>
+        <div class="shot chat" data-r="4">
+          <div class="bar"><i class="dot-r"></i><i class="dot-y"></i><i class="dot-g"></i><span>support-bot · live chat</span></div>
+          <div class="body">
+            <div class="msg user"><span class="who">Customer</span>Can I claim a bereavement discount after my flight?</div>
+            <div class="msg bot bad"><span class="who">Bot · closed-book (no RAG)</span>Yes! Just book now and request it back within 90 days. <span style="opacity:.7">…(made-up policy)</span></div>
+            <div class="msg bot good"><span class="who">Bot · open-book (RAG)</span>No — bereavement fares must be arranged <b>before</b> travel and can't be applied afterward.<span class="src">↳ source: Policy 4.2 (retrieved)</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="lead center" data-r="5" style="margin-top:16px">Same question. The difference is whether it <b class="accent">looked things up</b> — and whether it <b>stuck to what it found</b>.</p>
+    </div>
+  </section>
+
+  <!-- 13 · RAG METRICS -->
   <section class="slide">
     <div class="wrap">
       <span class="kicker" data-r>How to evaluate · RAG</span>
@@ -451,12 +523,21 @@ Proof of bereavement is required at the time of booking.</div>
             <li>Mature teams run the eval set <b>automatically on every change</b> (in CI).</li>
           </ul>
         </div>
-        <div class="card" data-r="4">
-          <h3>♻️ The eval flywheel</h3>
-          <p>Every <b>real-world failure</b> becomes a new permanent test case.</p>
-          <p class="small">Your agent can never make the same mistake twice — and your golden set grows sharper with age.</p>
+        <div class="shot" data-r="4">
+          <div class="bar"><i class="dot-r"></i><i class="dot-y"></i><i class="dot-g"></i><span>CI · eval run · prompt change #182</span></div>
+          <div class="body term">
+            <div class="dim">$ deepeval run golden_set.py</div>
+            <div><span class="ok">✓</span> refund_policy_q ............ <span class="ok">PASS</span></div>
+            <div><span class="ok">✓</span> bereavement_q .............. <span class="ok">PASS</span></div>
+            <div><span class="ko">✗</span> shipping_eta_q ............. <span class="ko">FAIL</span> <span class="dim">faithfulness 0.41</span></div>
+            <div><span class="ok">✓</span> hours_q .................... <span class="ok">PASS</span></div>
+            <div><span class="ko">✗</span> warranty_q ................. <span class="ko">FAIL</span> <span class="dim">relevancy 0.38</span></div>
+            <div class="dim">…24 more</div>
+            <div style="margin-top:8px">Result: <span class="ok">28 passed</span>, <span class="ko">2 regressed</span> <span class="hl">⛔ blocked from deploy</span></div>
+          </div>
         </div>
       </div>
+      <p class="lead center" data-r="5" style="margin-top:16px">♻️ <b>The flywheel:</b> every real-world failure becomes a permanent test case — so the agent can <b class="accent">never make the same mistake twice</b>.</p>
     </div>
   </section>
 
@@ -499,13 +580,54 @@ Proof of bereavement is required at the time of booking.</div>
     <div class="wrap">
       <span class="kicker" data-r>You don't build this from scratch</span>
       <h2 data-r="2">The toolbox (so the names aren't scary)</h2>
-      <div class="grid g2">
-        <div class="card" data-r="3"><h3>RAGAS</h3><p>Open-source. Popularized the RAG metrics we just saw — faithfulness, context precision/recall.</p></div>
-        <div class="card" data-r="4"><h3>DeepEval</h3><p>"Pytest for LLMs." Write evals like unit tests; inspect <em>why</em> the judge scored what it did.</p></div>
-        <div class="card" data-r="5"><h3>TruLens</h3><p>Tracing + feedback functions to evaluate and debug agent runs.</p></div>
-        <div class="card" data-r="6"><h3>Cloud &amp; platforms</h3><p>LangSmith, Braintrust, Maxim, Azure/Vertex eval — dashboards, regression runs, production monitoring.</p></div>
+      <div class="grid g2" style="align-items:center;gap:26px">
+        <div data-r="3">
+          <ul class="clean">
+            <li><b>RAGAS</b> — open-source; popularized the RAG metrics we just saw.</li>
+            <li><b>DeepEval</b> — "pytest for LLMs"; write evals like unit tests.</li>
+            <li><b>TruLens</b> — tracing + feedback functions to debug agent runs.</li>
+            <li><b>LangSmith · Braintrust · Maxim · Azure/Vertex eval</b> — dashboards, regression runs, production monitoring.</li>
+          </ul>
+          <p class="lead" style="margin-top:10px">Same idea everywhere: a <b>golden set</b>, a <b>grader</b>, a <b>scorecard</b>, on <b>repeat</b>.</p>
+        </div>
+        <div class="shot report" data-r="4">
+          <div class="bar"><i class="dot-r"></i><i class="dot-y"></i><i class="dot-g"></i><span>eval report · support-agent · v1.4</span></div>
+          <div class="body">
+            <div class="row"><span class="lbl">Faithfulness</span><span class="track"><b style="width:94%;background:var(--good)"></b></span><span class="pct" style="color:var(--good)">0.94</span></div>
+            <div class="row"><span class="lbl">Answer Relevancy</span><span class="track"><b style="width:91%;background:var(--good)"></b></span><span class="pct" style="color:var(--good)">0.91</span></div>
+            <div class="row"><span class="lbl">Context Recall</span><span class="track"><b style="width:72%;background:var(--warn)"></b></span><span class="pct" style="color:var(--warn)">0.72</span></div>
+            <div class="row"><span class="lbl">Context Precision</span><span class="track"><b style="width:88%;background:var(--good)"></b></span><span class="pct" style="color:var(--good)">0.88</span></div>
+            <div class="row"><span class="lbl">Hallucination</span><span class="track"><b style="width:9%;background:var(--good)"></b></span><span class="pct" style="color:var(--good)">0.09</span></div>
+            <div class="dim small" style="margin-top:6px;font-family:ui-monospace,Menlo,monospace;color:var(--muted)">42 cases · 1 below threshold (Context Recall) ⚠</div>
+          </div>
+        </div>
       </div>
-      <p class="lead center" data-r="6" style="margin-top:16px">Same ideas everywhere: a <b>golden set</b>, a <b>grader</b>, a <b>scorecard</b>, on <b>repeat</b>.</p>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="slide" id="quiz">
+    <div class="wrap">
+      <span class="kicker" style="margin-bottom:10px">Test yourself · be the evaluator</span>
+      <div class="qcard">
+        <div id="quiz-live">
+          <div class="qnum" id="q-num">Question 1 / 4</div>
+          <div class="qtext" id="q-text">…</div>
+          <div class="opts" id="q-opts"></div>
+          <div class="explain" id="q-explain"></div>
+          <div class="qfoot">
+            <span class="scoretag" id="q-score">Score: 0 / 0</span>
+            <button class="qnext" id="q-next">Next →</button>
+          </div>
+        </div>
+        <div class="finalcard" id="quiz-final" style="display:none">
+          <div class="qnum">Quiz complete</div>
+          <div class="big accent" id="q-final-score">4 / 4</div>
+          <p class="lead" id="q-final-msg" style="margin:0 auto;max-width:560px"></p>
+          <button class="qnext" id="q-restart" style="visibility:visible;margin-top:18px">↺ Try again</button>
+        </div>
+      </div>
+      <p class="footnote">Click an answer to lock it in — green = correct, red = your miss. Keyboard nav still works between slides.</p>
     </div>
   </section>
 
@@ -710,6 +832,115 @@ Proof of bereavement is required at the time of booking.</div>
       requestAnimationFrame(step);
     }
   }
+
+  /* ============ DYNAMIC QUIZ ============ */
+  var QUIZ = [
+    {
+      q:'Your agent passes a tricky test case — once. What does that actually tell you?',
+      a:[
+        'It’s reliable now — ship it',
+        'Almost nothing — it might be luck; run it many times',
+        'It will pass that case forever'
+      ],
+      correct:1,
+      why:'Agents are non-deterministic. A single pass (or fail) can be noise. We measure pass-rates over many runs, not one green check.'
+    },
+    {
+      q:'A bot gives a fluent, confident answer that contradicts your source documents. Which metric flags it?',
+      a:['Response time (latency)','Faithfulness','Answer length'],
+      correct:1,
+      why:'Faithfulness checks whether every claim is supported by the retrieved sources. This is exactly the Air Canada failure — confident, relevant, and unfaithful.'
+    },
+    {
+      q:'What is a “golden dataset”?',
+      a:[
+        'The data the model was trained on',
+        'A hand-curated set of test cases with expected answers',
+        'The most expensive, highest-quality model'
+      ],
+      correct:1,
+      why:'It’s your answer key: 30–100 curated inputs + ideal outputs. Worth more than your prompt — it survives every model and prompt change.'
+    },
+    {
+      q:'You edit the prompt to fix one bad answer. What must you do before shipping?',
+      a:[
+        'Ship immediately — one fix can’t hurt',
+        'Delete the old failing tests',
+        'Re-run the whole eval set (regression test) to confirm you didn’t break others'
+      ],
+      correct:2,
+      why:'Fixing Q14 can silently break Q3, Q7, Q22. Regression testing re-runs the full golden set on every change — ideally automatically, in CI.'
+    }
+  ];
+
+  (function quiz(){
+    var live=document.getElementById('quiz-live'), fin=document.getElementById('quiz-final');
+    if(!live) return;
+    var elNum=document.getElementById('q-num'), elText=document.getElementById('q-text'),
+        elOpts=document.getElementById('q-opts'), elWhy=document.getElementById('q-explain'),
+        elScore=document.getElementById('q-score'), elNext=document.getElementById('q-next'),
+        elFinalScore=document.getElementById('q-final-score'), elFinalMsg=document.getElementById('q-final-msg'),
+        elRestart=document.getElementById('q-restart');
+    var idx=0, score=0, answered=false;
+
+    function load(){
+      answered=false;
+      var item=QUIZ[idx];
+      elNum.textContent='Question '+(idx+1)+' / '+QUIZ.length;
+      elText.textContent=item.q;
+      elWhy.className='explain'; elWhy.textContent='';
+      elNext.style.visibility='hidden';
+      elNext.textContent = (idx===QUIZ.length-1) ? 'See score →' : 'Next →';
+      elScore.textContent='Score: '+score+' / '+idx;
+      elOpts.innerHTML='';
+      item.a.forEach(function(text,i){
+        var b=document.createElement('button');
+        b.className='opt'; b.type='button';
+        b.innerHTML='<span>'+text+'</span>';
+        b.addEventListener('click', function(){ choose(i,b); });
+        elOpts.appendChild(b);
+      });
+    }
+    function choose(i,btn){
+      if(answered) return; answered=true;
+      var item=QUIZ[idx];
+      var btns=elOpts.querySelectorAll('.opt');
+      btns.forEach(function(b){ b.disabled=true; });
+      if(i===item.correct){
+        score++;
+        btn.classList.add('correct');
+        btn.querySelector('span').insertAdjacentHTML('afterend','<span class="mk">✓</span>');
+      }else{
+        btn.classList.add('wrong');
+        btn.querySelector('span').insertAdjacentHTML('afterend','<span class="mk">✗</span>');
+        var ok=btns[item.correct];
+        ok.classList.add('correct');
+        ok.querySelector('span').insertAdjacentHTML('afterend','<span class="mk">✓</span>');
+      }
+      elWhy.textContent=item.why; elWhy.className='explain show';
+      elScore.textContent='Score: '+score+' / '+(idx+1);
+      elNext.style.visibility='visible';
+    }
+    function nextQ(){
+      if(idx<QUIZ.length-1){ idx++; load(); }
+      else{ showFinal(); }
+    }
+    function showFinal(){
+      live.style.display='none'; fin.style.display='block';
+      elFinalScore.textContent=score+' / '+QUIZ.length;
+      var msg;
+      if(score===QUIZ.length) msg='Flawless — you think like an evaluator. Go build that golden set. 🏆';
+      else if(score>=QUIZ.length-1) msg='Sharp. You’ve got the core instincts of agent evaluation.';
+      else if(score>=2) msg='Solid start — skim the metrics slides once more and you’re there.';
+      else msg='No worries — flip back through the deck; this stuff clicks fast.';
+      elFinalMsg.textContent=msg;
+    }
+    function restart(){ idx=0; score=0; fin.style.display='none'; live.style.display='block'; load(); }
+
+    elNext.addEventListener('click', nextQ);
+    elRestart.addEventListener('click', restart);
+    load();
+  })();
 })();
 </script>
 </body>

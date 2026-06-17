@@ -20,21 +20,33 @@ build step required).
 You can also click the left/right half of the screen, or use the on-screen `‹ ›` buttons.
 The URL hash (`#7`) tracks the current slide, so you can deep-link or refresh without losing place.
 
-## The interactive piece — "Eval Scorer" (slide 11)
+## Interactive pieces
 
-A live widget where the audience picks the answer an agent gave, and a mock **LLM-as-Judge** scores
-it on **Faithfulness**, **Answer Relevancy**, and **Context Recall** — with animated meters and a
-written rationale for each. The "confident hallucination" option re-creates the real Air Canada
-answer and visibly fails Faithfulness while *passing* Relevancy — the whole point of the module.
-Scoring is rule-based and offline; the logic mirrors real RAG metrics (Ragas/DeepEval style).
+- **"Eval Scorer" demo (slide 11)** — pick the answer an agent gave and a mock **LLM-as-Judge**
+  scores it on **Faithfulness**, **Answer Relevancy**, and **Context Recall** with animated meters
+  and a written rationale. The "confident hallucination" option re-creates the real Air Canada
+  answer and visibly fails Faithfulness while *passing* Relevancy. Rule-based and offline; the logic
+  mirrors real RAG metrics (Ragas/DeepEval style).
+- **Dynamic quiz (slide 18)** — a 4-question scored quiz with instant green/red feedback, an
+  explanation after each answer, a running score, and a final result message. Fully replayable
+  ("Try again").
 
-## Outline (18 slides)
+## "Screenshot" visuals
+
+To stay 100% offline and copyright-clean, the deck uses **HTML/CSS recreations** styled as
+screenshots (no external images): a **chatbot conversation** (closed-book vs open-book / RAG) on the
+"What's RAG?" slide, a **CI eval run** terminal on the regression slide, and an **eval report card**
+on the tooling slide. Swap in real images later if you prefer — each lives in a `.shot` container.
+
+## Outline (20 slides)
 
 1. Title · 2. Air Canada $650 chatbot · 3. Hall of fails ($1 Tahoe, fake case law) · 4. Terminology
 · 5. Deterministic vs non-deterministic · 6. "Pass/fail" is broken · 7. Three layers to test ·
 8. Golden dataset · 9. Who grades? · 10. LLM-as-Judge & its biases · **11. ★ Eval Scorer demo** ·
-12. The 5 RAG metrics · 13. Regression testing · 14. The 6 quality metrics · 15. Quality/Cost/Speed
-triangle · 16. Tooling (RAGAS/DeepEval/…) · 17. Takeaways checklist · 18. Close.
+**12. What's RAG? (open-book vs closed-book, chatbot mockup)** · 13. The 5 RAG metrics ·
+14. Regression testing (CI run mockup) · 15. The 6 quality metrics · 16. Quality/Cost/Speed triangle
+· 17. Tooling (RAGAS/DeepEval + report mockup) · **18. ★ Dynamic quiz** · 19. Takeaways checklist ·
+20. Close.
 
 ## Sources
 
