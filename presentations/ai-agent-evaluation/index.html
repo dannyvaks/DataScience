@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Evaluating AI Agents · Module 2</title>
+<!--
+  ============================================================================
+  AI AGENTS & AUTOMATION SPECIALIST 2026 — MODULE 2: EVALUATION
+  Self-contained interactive presentation (~25 min). No dependencies, offline.
+  Navigation: ← / → / Space / PgUp / PgDn, on-screen buttons, or '?' for help.
+  ----------------------------------------------------------------------------
+  Sources (research grounding):
+   - Air Canada chatbot ruling: CBC / BBC / case write-ups (Moffatt v. Air Canada, 2024)
+   - ChatGPT fake legal cases: NBC News (Mata v. Avianca, 2023)
+   - $1 Chevy Tahoe: Chevrolet of Watsonville chatbot, Dec 2023 (widely reported)
+   - RAG metrics & LLM-as-judge: Ragas docs, Confident AI / DeepEval, Patronus, Deepchecks
+   - Golden datasets / regression / trajectory eval: getmaxim.ai, Google ADK codelabs, Adaline
+   - Non-determinism vs traditional testing: MLflow, SitePoint, n8n blog
+  ============================================================================
+-->
+<style>
+  :root{
+    --bg:#0b0f1a;
+    --bg2:#11182b;
+    --ink:#eaf0ff;
+    --muted:#9aa7c7;
+    --accent:#5eead4;     /* teal */
+    --accent2:#a78bfa;    /* violet */
+    --good:#34d399;
+    --warn:#fbbf24;
+    --bad:#fb7185;
+    --card:#161f38;
+    --card2:#1d2748;
+    --line:#2a375f;
+    --maxw:1180px;
+    --pad: clamp(20px, 4vw, 64px);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:radial-gradient(1200px 800px at 75% -10%, #16203c 0%, var(--bg) 55%) fixed;
+    color:var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+
+  /* ---------- progress + chrome ---------- */
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:50;transition:width .35s ease}
+  #counter{position:fixed;top:14px;right:18px;z-index:50;font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;letter-spacing:.04em;background:rgba(13,18,33,.6);padding:5px 11px;border:1px solid var(--line);border-radius:999px;backdrop-filter:blur(6px)}
+  #brand{position:fixed;top:12px;left:18px;z-index:50;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  #brand b{color:var(--accent)}
+  .navbtn{position:fixed;bottom:16px;z-index:50;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:rgba(20,28,52,.75);color:var(--ink);font-size:20px;cursor:pointer;backdrop-filter:blur(6px);transition:transform .15s, background .15s}
+  .navbtn:hover{background:var(--card2);transform:translateY(-2px)}
+  #prev{right:74px}#next{right:18px}
+  #help-hint{position:fixed;bottom:24px;left:18px;z-index:50;color:var(--muted);font-size:12px}
+  #help-hint kbd{background:var(--card2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-family:inherit}
+
+  /* ---------- slide framework ---------- */
+  .stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  .slide{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:var(--pad);overflow-y:auto}
+  .slide.active{display:flex;animation:slidein .5s ease both}
+  @keyframes slidein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .wrap{width:100%;max-width:var(--maxw);margin:auto}
+
+  /* reveal-on-enter for elements with [data-r] */
+  .slide.active [data-r]{animation:rise .55s ease both}
+  .slide.active [data-r="2"]{animation-delay:.12s}
+  .slide.active [data-r="3"]{animation-delay:.24s}
+  .slide.active [data-r="4"]{animation-delay:.36s}
+  .slide.active [data-r="5"]{animation-delay:.48s}
+  .slide.active [data-r="6"]{animation-delay:.6s}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  /* ---------- typography ---------- */
+  h1{font-size:clamp(34px,6vw,68px);line-height:1.04;margin:.1em 0 .25em;letter-spacing:-.02em}
+  h2{font-size:clamp(26px,4vw,44px);line-height:1.1;margin:0 0 .5em;letter-spacing:-.015em}
+  h3{font-size:clamp(18px,2.4vw,24px);margin:0 0 .4em}
+  p,li{font-size:clamp(16px,1.9vw,21px);line-height:1.5;color:var(--ink)}
+  .lead{color:var(--muted)}
+  .kicker{display:inline-block;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);background:rgba(94,234,212,.06);padding:6px 12px;border-radius:999px;margin-bottom:18px}
+  .accent{color:var(--accent)}
+  .v2{color:var(--accent2)}
+  .big{font-size:clamp(40px,8vw,96px);font-weight:800;line-height:1;letter-spacing:-.03em}
+  em.q{color:var(--warn);font-style:italic}
+  .small{font-size:14px;color:var(--muted)}
+  .center{text-align:center}
+  a{color:var(--accent)}
+
+  /* ---------- layout helpers ---------- */
+  .grid{display:grid;gap:18px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:22px}
+  .card h3{color:var(--accent)}
+  ul.clean{list-style:none;padding:0;margin:0}
+  ul.clean li{padding:9px 0 9px 30px;position:relative}
+  ul.clean li::before{content:"";position:absolute;left:0;top:18px;width:9px;height:9px;border-radius:3px;background:var(--accent)}
+  .pill{display:inline-block;padding:4px 11px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--muted);margin:3px 4px 0 0;background:rgba(255,255,255,.02)}
+  .def{border-left:3px solid var(--accent2);background:rgba(167,139,250,.08);padding:14px 18px;border-radius:0 12px 12px 0;margin:10px 0}
+  .def b{color:var(--accent2)}
+  .quote{border-left:4px solid var(--accent);padding:6px 0 6px 22px;font-size:clamp(20px,2.6vw,30px);line-height:1.3}
+  .tag-good{color:var(--good)}.tag-bad{color:var(--bad)}.tag-warn{color:var(--warn)}
+  .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:stretch}
+  .vs .mid{display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700}
+  @media(max-width:820px){.vs{grid-template-columns:1fr}.vs .mid{padding:6px}}
+
+  /* ---------- eval scorer demo ---------- */
+  #demo .panel{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:18px}
+  .qbox{font-size:16px}
+  .ctx{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;color:#cdd8f7;background:#0c1325;border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.45;max-height:160px;overflow:auto}
+  .choices{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+  .choice{flex:1 1 220px;text-align:left;cursor:pointer;border:1px solid var(--line);background:#0e1730;color:var(--ink);border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.35;transition:border-color .15s, transform .12s, background .15s}
+  .choice:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .choice.sel{border-color:var(--accent);background:#10243a;box-shadow:0 0 0 1px var(--accent) inset}
+  .choice b{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .meters{display:grid;gap:14px}
+  .meter .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+  .meter .name{font-weight:700}
+  .meter .val{font-variant-numeric:tabular-nums;font-weight:800}
+  .bar{height:12px;border-radius:999px;background:#0c1325;border:1px solid var(--line);overflow:hidden}
+  .bar > span{display:block;height:100%;width:0;border-radius:999px;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+  .rationale{font-size:13.5px;color:var(--muted);margin-top:5px;min-height:1.2em}
+  .verdict{margin-top:14px;font-size:15px;font-weight:600;min-height:1.4em}
+
+  /* ---------- scorecard ---------- */
+  .score{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:820px){.score{grid-template-columns:1fr 1fr}}
+  .metric{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:14px;padding:16px}
+  .metric .ic{font-size:24px}
+  .metric h3{margin:6px 0 2px;color:var(--ink);font-size:18px}
+  .metric p{font-size:14px;color:var(--muted);margin:0}
+
+  /* triangle */
+  .triangle{display:grid;place-items:center;gap:10px}
+  .tri{display:flex;gap:26px;flex-wrap:wrap;justify-content:center}
+  .tri .node{width:150px;height:150px;border-radius:50%;display:grid;place-items:center;text-align:center;border:2px solid var(--line);background:radial-gradient(circle at 30% 25%, #1b2750, #0e1428);font-weight:700}
+  .tri .node small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:4px}
+
+  /* help overlay */
+  #help{position:fixed;inset:0;z-index:80;background:rgba(5,8,16,.86);display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+  #help.show{display:flex}
+  #help .box{max-width:480px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
+  #help kbd{background:var(--card2);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:2px 8px;font-family:inherit;font-size:14px}
+  #help table{width:100%;border-collapse:collapse}
+  #help td{padding:8px 6px;border-bottom:1px solid var(--line);font-size:15px}
+
+  .footnote{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:12px;text-align:center;width:90%}
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="brand"><b>Module 2</b> · Evaluation</div>
+<div id="counter">1 / 18</div>
+
+<div class="stage" id="stage">
+
+  <!-- 1 · TITLE -->
+  <section class="slide">
+    <div class="wrap center">
+      <span class="kicker" data-r>AI Agents &amp; Automation Specialist · 2026</span>
+      <h1 data-r="2">Evaluating AI Agents</h1>
+      <p class="lead" data-r="3" style="font-size:clamp(20px,3vw,30px);max-width:880px;margin:0 auto">
+        How do you test something that <em class="q">never gives the same answer twice</em>?
+      </p>
+      <p class="small" data-r="4" style="margin-top:34px">Module 2 — Evaluation for AI Agents &amp; Models · a 25-minute tour</p>
+      <p class="small" data-r="5">Press <kbd style="background:var(--card2);border:1px solid var(--line);padding:1px 6px;border-radius:5px">→</kbd> to begin · <kbd style="background:var(--card2);border:1px solid var(--line);padding:1px 6px;border-radius:5px">?</kbd> for help</p>
+    </div>
+  </section>
+
+  <!-- 2 · AIR CANADA -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>A true story · February 2024</span>
+      <h2 data-r="2">The $650 chatbot</h2>
+      <div class="grid g2" style="align-items:center">
+        <div data-r="3">
+          <ul class="clean">
+            <li>A grieving customer asks Air Canada's website chatbot about <b>bereavement fares</b>.</li>
+            <li>The bot confidently invents a policy: <em class="q">"book now, claim the discount back within 90 days."</em></li>
+            <li>That policy <b>never existed</b>. Air Canada refused the refund.</li>
+            <li>In court, the airline argued the chatbot was <em class="q">"a separate legal entity responsible for its own actions."</em></li>
+          </ul>
+        </div>
+        <div class="card" data-r="4">
+          <div class="big accent">$650</div>
+          <p style="margin:.4em 0 0">The tribunal <b>rejected</b> the "it's not us" defense and ordered Air Canada to pay.</p>
+          <p class="small" style="margin-top:12px">Moffatt v. Air Canada, BC Civil Resolution Tribunal, 2024.</p>
+        </div>
+      </div>
+      <p class="lead center" data-r="5" style="margin-top:22px">The code worked perfectly. The <b class="accent">answer</b> was a lawsuit.</p>
+    </div>
+  </section>
+
+  <!-- 3 · HALL OF FAILS -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>Hall of fame · expensive lessons</span>
+      <h2 data-r="2">It wasn't a one-off</h2>
+      <div class="grid g3">
+        <div class="card" data-r="3">
+          <h3>🚗 The $1 Tahoe</h3>
+          <p>A Chevy dealership bot was talked into agreeing a <b>2024 Tahoe for $1</b> — and added <em class="q">"that's a legally binding offer, no takesies-backsies."</em></p>
+        </div>
+        <div class="card" data-r="4">
+          <h3>⚖️ Fake case law</h3>
+          <p>A lawyer filed a brief full of citations ChatGPT <b>invented</b>. The cases didn't exist. The court issued <b>sanctions</b>.</p>
+        </div>
+        <div class="card" data-r="5">
+          <h3>🛫 The refund bot</h3>
+          <p>Air Canada — same root cause: a confident model, an <b>unverified</b> answer, a real bill.</p>
+        </div>
+      </div>
+      <p class="quote center" data-r="6" style="margin:26px auto 0;max-width:880px">
+        None of these had a <span class="tag-bad">bug</span>. They shipped without <span class="accent">evaluation</span>.
+      </p>
+    </div>
+  </section>
+
+  <!-- 4 · TERMINOLOGY -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>First, the words</span>
+      <h2 data-r="2">Four terms, no jargon</h2>
+      <div class="grid g2">
+        <div class="def" data-r="3"><b>LLM</b> — a Large Language Model. A text-prediction engine that's read most of the internet. Brilliant, fluent… and occasionally makes things up with total confidence.</div>
+        <div class="def" data-r="4"><b>Automation</b> — a fixed recipe. <em>"When email arrives → save attachment → notify Slack."</em> Same steps every time. No judgment.</div>
+        <div class="def" data-r="5"><b>Agent</b> — an LLM that <b>decides</b> and <b>acts</b>: it picks tools, takes steps, reacts to results to reach a goal. Judgment included.</div>
+        <div class="def" data-r="6"><b>Evaluation ("eval")</b> — measuring, systematically, whether the agent is actually good: correct, consistent, safe, fast, affordable.</div>
+      </div>
+      <p class="lead center" data-r="6" style="margin-top:18px">An automation you <b>debug</b>. An agent you <b class="accent">evaluate</b>.</p>
+    </div>
+  </section>
+
+  <!-- 5 · DETERMINISM -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>Why your old test playbook fails</span>
+      <h2 data-r="2">Calculator vs. moody intern</h2>
+      <div class="vs">
+        <div class="card" data-r="3">
+          <h3 class="tag-good">Traditional software</h3>
+          <p><b>Deterministic.</b> Same input → the <b>same</b> output, every single time.</p>
+          <p class="ctx" style="margin-top:10px">assert add(2, 2) == 4  ✅<br>assert add(2, 2) == 4  ✅<br>assert add(2, 2) == 4  ✅</p>
+          <p class="small">A calculator never has an off day.</p>
+        </div>
+        <div class="mid" data-r="4">VS</div>
+        <div class="card" data-r="5">
+          <h3 class="tag-warn">An AI agent</h3>
+          <p><b>Non-deterministic.</b> Same input → a <b>different</b> answer each run. Different words, different tools, different reasoning.</p>
+          <p class="ctx" style="margin-top:10px">assert agent("refund?") == "..."  ✅<br>assert agent("refund?") == "..."  ❌<br>assert agent("refund?") == "..."  🤷</p>
+          <p class="small">A smart intern who's brilliant on Monday, distracted on Friday.</p>
+        </div>
+      </div>
+      <p class="lead center" data-r="6" style="margin-top:18px">Exact-match testing (<code>==</code>) is <b class="tag-bad">meaningless</b> here. We need a new yardstick.</p>
+    </div>
+  </section>
+
+  <!-- 6 · PASS/FAIL BROKEN -->
+  <section class="slide">
+    <div class="wrap center">
+      <span class="kicker" data-r>The mindset shift</span>
+      <h2 data-r="2">"Did it pass?" is the wrong question</h2>
+      <p class="big v2" data-r="3" style="margin:.2em 0">Does it pass <span class="accent">often enough</span>?</p>
+      <div class="grid g2" style="max-width:880px;margin:24px auto 0;text-align:left">
+        <div class="card" data-r="4"><p>One <b class="tag-bad">failure</b> might just be noise — a bad dice roll.</p></div>
+        <div class="card" data-r="5"><p>One <b class="tag-good">success</b> might just be luck — you got the good Monday.</p></div>
+      </div>
+      <p class="lead" data-r="6" style="margin-top:22px">So we run each case <b>many times</b> and think in <b class="accent">probabilities &amp; rates</b>, not green/red checkmarks. Evaluation is statistics, not assertions.</p>
+    </div>
+  </section>
+
+  <!-- 7 · THREE LAYERS -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>What "good" even means</span>
+      <h2 data-r="2">An agent can finish with zero errors — and still be wrong</h2>
+      <p class="lead" data-r="2">So you must test three different things:</p>
+      <div class="grid g3" style="margin-top:8px">
+        <div class="card" data-r="3">
+          <h3>1 · Final Answer</h3>
+          <p>Is the output correct, relevant, safe, on-tone? The thing the user actually sees.</p>
+        </div>
+        <div class="card" data-r="4">
+          <h3>2 · Trajectory</h3>
+          <p>The <b>journey</b>: did it pick the right tools, in the right order, with the right arguments? A correct answer reached by luck is a time bomb.</p>
+        </div>
+        <div class="card" data-r="5">
+          <h3>3 · Retrieval (RAG)</h3>
+          <p>Did it pull the <b>right facts</b> from your documents — or answer from imagination?</p>
+        </div>
+      </div>
+      <p class="lead center" data-r="6" style="margin-top:20px">Air Canada nailed #1's grammar, skipped #3's facts. <b class="accent">All three matter.</b></p>
+    </div>
+  </section>
+
+  <!-- 8 · GOLDEN DATASET -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>How to evaluate · part 1</span>
+      <h2 data-r="2">The Golden Dataset</h2>
+      <div class="grid g2" style="align-items:center">
+        <div data-r="3">
+          <div class="def"><b>Golden dataset (eval set)</b> — a hand-curated list of test cases. Each one = an <b>input</b> + the <b>ideal output</b> or expected behavior. Your "answer key."</div>
+          <ul class="clean">
+            <li>Start small: <b>30–100</b> realistic cases beats 10,000 random ones.</li>
+            <li>Pull from real user questions, tricky edge cases, and known disasters.</li>
+            <li>Cover the boring <em>and</em> the adversarial (the bereavement question!).</li>
+          </ul>
+        </div>
+        <div class="card center" data-r="4">
+          <p class="quote" style="border:none;padding:0">Your eval set is worth<br><span class="big accent" style="font-size:clamp(28px,4vw,46px)">more than your prompt.</span></p>
+          <p class="small" style="margin-top:14px">Prompts and models change weekly. A good answer key is the asset that survives.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · WHO GRADES -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>How to evaluate · part 2</span>
+      <h2 data-r="2">Okay — but <em>who</em> grades the answers?</h2>
+      <div class="grid g3">
+        <div class="card" data-r="3">
+          <h3>⚙️ Code / rules</h3>
+          <p>Exact checks: valid JSON? contains the order number? under 200 words?</p>
+          <p class="small tag-good">Cheap · instant · objective</p>
+          <p class="small tag-bad">Can't judge "is this helpful?"</p>
+        </div>
+        <div class="card" data-r="4">
+          <h3>🧑‍⚖️ Humans</h3>
+          <p>People read outputs and rate them. The gold standard for taste &amp; nuance.</p>
+          <p class="small tag-good">Trustworthy · catches subtlety</p>
+          <p class="small tag-bad">Slow · pricey · doesn't scale</p>
+        </div>
+        <div class="card" data-r="5">
+          <h3>🤖 LLM-as-Judge</h3>
+          <p>Use a <b>strong model</b> to score another model's output against a rubric.</p>
+          <p class="small tag-good">Scales to thousands · fast · ~human-level</p>
+          <p class="small tag-bad">Has biases (next slide!)</p>
+        </div>
+      </div>
+      <p class="lead center" data-r="6" style="margin-top:20px">In practice: <b class="accent">code</b> for the objective stuff, <b class="accent">LLM-as-judge</b> for scale, <b class="accent">humans</b> to audit the judge.</p>
+    </div>
+  </section>
+
+  <!-- 10 · JUDGE DONE RIGHT -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>LLM-as-Judge · the fine print</span>
+      <h2 data-r="2">Your robot judge has opinions</h2>
+      <div class="grid g2">
+        <div data-r="3">
+          <h3 class="accent">Do it right</h3>
+          <ul class="clean">
+            <li>Give a <b>rubric</b> with clear criteria — not <em class="q">"is this good?"</em></li>
+            <li>Ask it to reason <b>criterion-by-criterion</b>, then score.</li>
+            <li>Demand structured output + a written rationale you can inspect.</li>
+          </ul>
+        </div>
+        <div data-r="4">
+          <h3 class="tag-warn">Known biases (yes, really)</h3>
+          <ul class="clean">
+            <li><b>Verbosity bias</b> — longer answers <em>feel</em> smarter, so they score higher.</li>
+            <li><b>Position bias</b> — whichever option is shown first tends to win.</li>
+            <li><b>Self-preference</b> — models quietly rate <b>their own</b> writing best. 😏</li>
+          </ul>
+        </div>
+      </div>
+      <p class="lead center" data-r="5" style="margin-top:18px">A judge with a rubric is a colleague. A judge without one is a vibe.</p>
+    </div>
+  </section>
+
+  <!-- 11 · LIVE DEMO -->
+  <section class="slide" id="demo">
+    <div class="wrap">
+      <span class="kicker">★ Live demo · be the judge</span>
+      <h2 style="margin-bottom:14px">The Eval Scorer</h2>
+      <div class="grid g2" style="gap:16px;align-items:start">
+        <div class="panel">
+          <p class="small" style="margin:0 0 4px">USER QUESTION</p>
+          <p class="qbox" style="margin:0 0 12px"><b>"Can I get a bereavement discount if I book now and claim it later?"</b></p>
+          <p class="small" style="margin:0 0 4px">RETRIEVED CONTEXT (the only approved source)</p>
+          <div class="ctx">[Policy 4.2] Bereavement fares must be requested <b>before</b> travel.
+Discounts <b>cannot</b> be applied retroactively after a flight is taken.
+Proof of bereavement is required at the time of booking.</div>
+          <p class="small" style="margin:14px 0 6px">Pick the answer the agent gave — then watch the judge score it:</p>
+          <div class="choices" id="choices"></div>
+        </div>
+        <div class="panel">
+          <div class="meters" id="meters"></div>
+          <div class="verdict" id="verdict">⬅ Choose an answer to grade it.</div>
+        </div>
+      </div>
+      <p class="footnote">Scores are illustrative &amp; rule-based (offline) — but the <b>logic</b> mirrors real RAG metrics.</p>
+    </div>
+  </section>
+
+  <!-- 12 · RAG METRICS -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>How to evaluate · RAG</span>
+      <h2 data-r="2">RAG, graded like a library visit</h2>
+      <p class="lead" data-r="2">Two jobs: the <b>librarian</b> fetches books (retrieval); <b>you</b> write the essay (generation).</p>
+      <div class="grid g2">
+        <div class="card" data-r="3">
+          <h3 class="accent">Retriever — did it fetch right?</h3>
+          <ul class="clean">
+            <li><b>Context Recall</b> — did it grab <em>all</em> the books it needed?</li>
+            <li><b>Context Precision</b> — are the right books ranked at the top, not buried?</li>
+            <li><b>Context Relevancy</b> — how much of what it grabbed is actually on-topic?</li>
+          </ul>
+        </div>
+        <div class="card" data-r="4">
+          <h3 class="v2">Generator — did it answer honestly?</h3>
+          <ul class="clean">
+            <li><b>Faithfulness</b> — is every claim <em>supported</em> by the fetched books? (No making it up.)</li>
+            <li><b>Answer Relevancy</b> — does it actually answer the question asked?</li>
+          </ul>
+        </div>
+      </div>
+      <p class="lead center" data-r="5" style="margin-top:18px">Air Canada had the right book on the shelf and quoted a <b class="tag-bad">different one it imagined</b> → a classic <b class="accent">faithfulness</b> failure.</p>
+    </div>
+  </section>
+
+  <!-- 13 · REGRESSION -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>How to evaluate · keeping it good</span>
+      <h2 data-r="2">Regression testing: fix one thing, break three</h2>
+      <div class="grid g2" style="align-items:center">
+        <div data-r="3">
+          <div class="def"><b>Regression test</b> — re-run your whole golden dataset after <em>any</em> change (new prompt, new model, new tool) to prove you didn't break what already worked.</div>
+          <ul class="clean">
+            <li>You tweak a prompt to fix Q14… and silently wreck Q3, Q7, Q22.</li>
+            <li>Without an eval set, you'd never know until a customer does.</li>
+            <li>Mature teams run the eval set <b>automatically on every change</b> (in CI).</li>
+          </ul>
+        </div>
+        <div class="card" data-r="4">
+          <h3>♻️ The eval flywheel</h3>
+          <p>Every <b>real-world failure</b> becomes a new permanent test case.</p>
+          <p class="small">Your agent can never make the same mistake twice — and your golden set grows sharper with age.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 · SIX METRICS -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>The scorecard</span>
+      <h2 data-r="2">No single number captures "good"</h2>
+      <div class="score">
+        <div class="metric" data-r="3"><div class="ic">🎯</div><h3>Accuracy</h3><p>Is it correct &amp; faithful to the facts?</p></div>
+        <div class="metric" data-r="3"><div class="ic">🔁</div><h3>Consistency</h3><p>Same question, same quality — every time?</p></div>
+        <div class="metric" data-r="4"><div class="ic">⚡</div><h3>Response time</h3><p>Latency. A perfect answer in 40s feels broken.</p></div>
+        <div class="metric" data-r="4"><div class="ic">💸</div><h3>Cost</h3><p>Cents per call × millions of calls = real money.</p></div>
+        <div class="metric" data-r="5"><div class="ic">😀</div><h3>User satisfaction</h3><p>Thumbs-up rate, escalations, re-asks.</p></div>
+        <div class="metric" data-r="5"><div class="ic">💥</div><h3>Failure rate</h3><p>How often it errors, refuses, or goes rogue.</p></div>
+      </div>
+      <p class="lead center" data-r="6" style="margin-top:18px">A 99%-accurate agent that's <b>slow, pricey, and inconsistent</b> can still be unusable.</p>
+    </div>
+  </section>
+
+  <!-- 15 · TRIANGLE -->
+  <section class="slide">
+    <div class="wrap center">
+      <span class="kicker" data-r>The trade-off you can't escape</span>
+      <h2 data-r="2">Quality · Cost · Speed — pick your balance</h2>
+      <div class="triangle" data-r="3">
+        <div class="tri">
+          <div class="node">Quality<small>smartest model</small></div>
+          <div class="node">Cost<small>cheapest call</small></div>
+          <div class="node">Speed<small>lowest latency</small></div>
+        </div>
+      </div>
+      <p class="lead" data-r="4" style="margin-top:22px;max-width:860px;margin-left:auto;margin-right:auto">The "smartest" model can be <b>10× the price</b> and <b>3× slower</b>. A fraud check wants quality; an autocomplete wants speed; a bulk classifier wants cost.</p>
+      <p class="lead" data-r="5"><b class="accent">Match the model to the task</b> — and let your eval scores prove the trade was worth it.</p>
+    </div>
+  </section>
+
+  <!-- 16 · TOOLING -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>You don't build this from scratch</span>
+      <h2 data-r="2">The toolbox (so the names aren't scary)</h2>
+      <div class="grid g2">
+        <div class="card" data-r="3"><h3>RAGAS</h3><p>Open-source. Popularized the RAG metrics we just saw — faithfulness, context precision/recall.</p></div>
+        <div class="card" data-r="4"><h3>DeepEval</h3><p>"Pytest for LLMs." Write evals like unit tests; inspect <em>why</em> the judge scored what it did.</p></div>
+        <div class="card" data-r="5"><h3>TruLens</h3><p>Tracing + feedback functions to evaluate and debug agent runs.</p></div>
+        <div class="card" data-r="6"><h3>Cloud &amp; platforms</h3><p>LangSmith, Braintrust, Maxim, Azure/Vertex eval — dashboards, regression runs, production monitoring.</p></div>
+      </div>
+      <p class="lead center" data-r="6" style="margin-top:16px">Same ideas everywhere: a <b>golden set</b>, a <b>grader</b>, a <b>scorecard</b>, on <b>repeat</b>.</p>
+    </div>
+  </section>
+
+  <!-- 17 · TAKEAWAYS -->
+  <section class="slide">
+    <div class="wrap">
+      <span class="kicker" data-r>If you remember five things</span>
+      <h2 data-r="2">The evaluator's checklist</h2>
+      <div class="grid g2">
+        <ul class="clean" data-r="3">
+          <li><b>Build the eval set <em>before</em> the agent.</b> No answer key, no project.</li>
+          <li><b>Think in rates, not pass/fail.</b> Run it many times.</li>
+          <li><b>Test the journey, not just the answer.</b> Tools &amp; retrieval too.</li>
+        </ul>
+        <ul class="clean" data-r="4">
+          <li><b>Use a judge — with a rubric.</b> Watch for verbosity &amp; self-preference.</li>
+          <li><b>Add every production failure back as a test.</b> Feed the flywheel.</li>
+        </ul>
+      </div>
+      <p class="quote center" data-r="5" style="margin:26px auto 0;max-width:900px">You can't improve what you don't <span class="accent">measure</span> — and with agents, measuring is the hard, valuable part.</p>
+    </div>
+  </section>
+
+  <!-- 18 · CLOSE -->
+  <section class="slide">
+    <div class="wrap center">
+      <span class="kicker" data-r>Full circle</span>
+      <h1 data-r="2" style="font-size:clamp(28px,5vw,56px)">One faithfulness test.</h1>
+      <p class="lead" data-r="3" style="font-size:clamp(20px,2.8vw,28px);max-width:880px;margin:0 auto">That's all it would have taken to catch the Air Canada bot — <b>before</b> the $650, the lawsuit, and the headlines.</p>
+      <p data-r="4" style="margin-top:30px;font-size:clamp(22px,3vw,32px)" class="accent"><b>Evaluation isn't the boring part. It's the part that ships.</b></p>
+      <p class="small" data-r="5" style="margin-top:34px">Thank you · Questions? · Module 2 — Evaluation for AI Agents &amp; Models</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- chrome -->
+<button class="navbtn" id="prev" aria-label="Previous slide">‹</button>
+<button class="navbtn" id="next" aria-label="Next slide">›</button>
+<div id="help-hint"><kbd>←</kbd> <kbd>→</kbd> navigate · <kbd>?</kbd> help</div>
+
+<div id="help">
+  <div class="box">
+    <h3>Keyboard shortcuts</h3>
+    <table>
+      <tr><td><kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd></td><td>Next slide</td></tr>
+      <tr><td><kbd>←</kbd> <kbd>PgUp</kbd></td><td>Previous slide</td></tr>
+      <tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td>First / last slide</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Toggle this help</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close help</td></tr>
+    </table>
+    <p class="small" style="margin-top:14px">Tip: click the left/right half of the screen to move. Press <kbd>?</kbd> again to close.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var i = 0;
+  var progress = document.getElementById('progress');
+  var counter = document.getElementById('counter');
+  var help = document.getElementById('help');
+
+  function render(){
+    slides.forEach(function(s, idx){ s.classList.toggle('active', idx === i); });
+    progress.style.width = ((i)/(total-1)*100) + '%';
+    counter.textContent = (i+1) + ' / ' + total;
+    if(location.hash !== '#'+(i+1)) history.replaceState(null,'', '#'+(i+1));
+  }
+  function go(n){ i = Math.max(0, Math.min(total-1, n)); render(); }
+  function next(){ go(i+1); }
+  function prev(){ go(i-1); }
+
+  document.getElementById('next').addEventListener('click', next);
+  document.getElementById('prev').addEventListener('click', prev);
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === '?' ){ help.classList.toggle('show'); e.preventDefault(); return; }
+    if(e.key === 'Escape'){ help.classList.remove('show'); return; }
+    if(help.classList.contains('show')) return;
+    switch(e.key){
+      case 'ArrowRight': case ' ': case 'PageDown': next(); e.preventDefault(); break;
+      case 'ArrowLeft': case 'PageUp': prev(); e.preventDefault(); break;
+      case 'Home': go(0); break;
+      case 'End': go(total-1); break;
+    }
+  });
+
+  // click left/right half to navigate (ignore clicks on interactive elements)
+  document.getElementById('stage').addEventListener('click', function(e){
+    if(e.target.closest('button, a, .choice, input, select, .ctx')) return;
+    if(e.clientX > window.innerWidth/2) next(); else prev();
+  });
+
+  // deep link via hash
+  var start = parseInt((location.hash||'').replace('#',''),10);
+  if(start && start>=1 && start<=total) i = start-1;
+  render();
+
+  /* ============ EVAL SCORER DEMO ============ */
+  var options = [
+    {
+      label:'A · Faithful & relevant',
+      tone:'good',
+      text:'"No — bereavement fares must be requested before travel and can\'t be applied retroactively. You\'d need to arrange it at booking, with proof."',
+      scores:{Faithfulness:0.98, 'Answer Relevancy':0.95, 'Context Recall':0.92},
+      why:{
+        Faithfulness:'Every claim traces directly to Policy 4.2.',
+        'Answer Relevancy':'Directly answers the yes/no question asked.',
+        'Context Recall':'Uses the key facts from the retrieved policy.'
+      },
+      verdict:'✅ Ships. Correct, grounded, and on-topic — this is the answer Air Canada needed.'
+    },
+    {
+      label:'B · Confident hallucination',
+      tone:'bad',
+      text:'"Yes! Just book now and request the bereavement discount back within 90 days of your flight."',
+      scores:{Faithfulness:0.08, 'Answer Relevancy':0.90, 'Context Recall':0.20},
+      why:{
+        Faithfulness:'Contradicts the source — invents a 90-day retroactive policy.',
+        'Answer Relevancy':'It does answer the question… confidently and wrongly.',
+        'Context Recall':'Ignored the rule it was handed.'
+      },
+      verdict:'💥 This is the literal Air Canada answer. Fluent, relevant — and a lawsuit. Faithfulness catches it.'
+    },
+    {
+      label:'C · Faithful but off-topic',
+      tone:'warn',
+      text:'"Bereavement travel can be a stressful time. Our call centre is open 24/7 and we also offer seat selection and extra baggage options."',
+      scores:{Faithfulness:0.80, 'Answer Relevancy':0.25, 'Context Recall':0.15},
+      why:{
+        Faithfulness:'Nothing false — but it barely uses the source either.',
+        'Answer Relevancy':'Never actually answers "can I claim it later?"',
+        'Context Recall':'Skips the relevant policy entirely.'
+      },
+      verdict:'🟡 Not a lie — but a non-answer. High faithfulness alone is not enough; relevancy matters too.'
+    }
+  ];
+  var metricOrder = ['Faithfulness','Answer Relevancy','Context Recall'];
+  var toneColor = {good:'var(--good)', warn:'var(--warn)', bad:'var(--bad)'};
+
+  var choicesEl = document.getElementById('choices');
+  var metersEl = document.getElementById('meters');
+  var verdictEl = document.getElementById('verdict');
+
+  if(choicesEl && metersEl){
+    // build meters
+    metricOrder.forEach(function(m){
+      var d = document.createElement('div');
+      d.className = 'meter';
+      d.innerHTML =
+        '<div class="top"><span class="name">'+m+'</span><span class="val" data-val="'+m+'">—</span></div>'+
+        '<div class="bar"><span data-bar="'+m+'"></span></div>'+
+        '<div class="rationale" data-why="'+m+'"></div>';
+      metersEl.appendChild(d);
+    });
+    // build choices
+    options.forEach(function(opt, idx){
+      var b = document.createElement('button');
+      b.className = 'choice';
+      b.innerHTML = '<b>'+opt.label+'</b>'+opt.text;
+      b.addEventListener('click', function(){
+        choicesEl.querySelectorAll('.choice').forEach(function(c){c.classList.remove('sel');});
+        b.classList.add('sel');
+        score(opt);
+      });
+      choicesEl.appendChild(b);
+    });
+
+    function score(opt){
+      metricOrder.forEach(function(m){
+        var pct = Math.round(opt.scores[m]*100);
+        var col;
+        if(pct >= 75) col = 'var(--good)'; else if(pct >= 45) col = 'var(--warn)'; else col = 'var(--bad)';
+        var bar = metersEl.querySelector('[data-bar="'+m+'"]');
+        var val = metersEl.querySelector('[data-val="'+m+'"]');
+        var why = metersEl.querySelector('[data-why="'+m+'"]');
+        // reset then animate
+        bar.style.width = '0%';
+        // force reflow so transition replays
+        void bar.offsetWidth;
+        bar.style.background = col;
+        bar.style.width = pct + '%';
+        val.style.color = col;
+        animateNumber(val, pct);
+        why.textContent = opt.why[m];
+      });
+      verdictEl.style.color = toneColor[opt.tone];
+      verdictEl.textContent = opt.verdict;
+    }
+
+    function animateNumber(el, target){
+      var start = 0, t0 = null, dur = 700;
+      function step(ts){
+        if(t0===null) t0 = ts;
+        var p = Math.min(1,(ts-t0)/dur);
+        el.textContent = Math.round(start + (target-start)*p) + '%';
+        if(p<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+  }
+})();
+</script>
+</body>
+</html>
